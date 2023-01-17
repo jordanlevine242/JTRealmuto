@@ -1,0 +1,36 @@
+library(dplyr)
+
+##Calculating the percentage of Realmuto's 2019 & 2020 WAR that was attributed to Framing
+##Data from FanGraphs - better practice would have been to download .csv of Realmuto's data
+year = c(2019, 2020)
+batting = c(5.8, 6.1)
+base_running = c(5.4, 2.0)
+fielding = c(10.0, -0.2)
+positional = c(9.5, 1.5)
+framing = c(8.0, 2.2)
+replacement = c(19.0, 5.3)
+runs_to_wins = c(10.296, 10.282)
+
+war = (batting + base_running + fielding + positional + framing + replacement) / runs_to_wins
+ABS_adjusted_war = (batting + base_running + fielding + positional + replacement) / runs_to_wins
+
+
+
+##Visualization
+library(ggplot2)
+library(scales)
+framing_war = war - ABS_adjusted_war
+df <- data.frame(year, ABS_adjusted_war, framing_war)
+df <- tidyr::pivot_longer(df, cols = 2:3, names_to = "type_war", values_to = "values")
+
+ggplot(df, aes(fill = forcats::fct_rev(type_war), y = values, x = year)) +
+  geom_bar(position = "stack", stat="identity") +
+  labs(x = "Year",
+       y = "J.T. Realmuto's Total WAR",
+       title = "Proportion of J.T. Realmuto's 2019-2020 WAR Attributed to Framing") +
+  scale_x_continuous(breaks = c(2019, 2020)) +
+  scale_y_continuous(breaks = c(0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0), limits = c(0,6), labels = label_number()) +
+  scale_fill_discrete(name = "WAR attributed to:") + 
+  theme_grey(base_size = 16) +
+  annotate("text", x = 2019, y = 5.25, label = "13.5%", size = 8) + 
+  annotate("text", x = 2020, y = 1.55, label = "13.5%", size = 5)
